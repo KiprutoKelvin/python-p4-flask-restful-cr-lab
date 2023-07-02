@@ -17,10 +17,56 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    def get(self, plant_id=None):
+        if plant_id:
+            plant = Plant.query.get(plant_id)
+            if not plant:
+                return {'message': 'Plant not found'}, 404
+            return {
+                'id': plant.id,
+                'name': plant.name,
+                'image': plant.image,
+                'price': plant.price
+            }
+        else:
+            plants = Plant.query.all()
+            return [{
+                'id': plant.id,
+                'name': plant.name,
+                'image': plant.image,
+                'price': plant.price
+            } for plant in plants]
+
+    def post(self):
+        data = request.get_json()
+        name = data.get('name')
+        image = data.get('image')
+        price = data.get('price')
+
+        plant = Plant(name=name, image=image, price=price)
+        db.session.add(plant)
+        db.session.commit()
+
+        return {
+            'id': plant.id,
+            'name': plant.name,
+            'image': plant.image,
+            'price': plant.price
+        }, 201
+
+api.add_resource(Plants, '/plants', '/plants/<int:plant_id>')
 
 class PlantByID(Resource):
-    pass
+    def get(self, plant_id):
+        plant = Plant.query.get(plant_id)
+        if not plant:
+            return {'message': 'Plant not found'}, 404
+        return {
+            'id': plant.id,
+            'name': plant.name,
+            'image': plant.image,
+            'price': plant.price
+        }
         
 
 if __name__ == '__main__':
